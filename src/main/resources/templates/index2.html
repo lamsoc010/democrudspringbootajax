@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="ISO-8859-1">
+<title>List Product</title>
+
+<link rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.slim.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.min.js"></script>
+</head>
+
+<body>
+
+	<div class="container my-2">
+		<h1>Product List</h1>
+
+		<button data-toggle="modal" data-target="#modal-create"
+			class="btn btn-primary btn-sm mb-3" onclick=ShowCreate()>Add Product</button>
+		<select id="sort-price" onchange="SortPrice(this.value)">
+			<option value="desc">Giá giảm dần</option>
+			<option value="asc">Giá tăng dần</option>
+		</select>
+		<input id="find-name" placeholder="Nhập tên cần tìm kiếm" oninput="FindName(this.value)"/>
+		<table border="1" class="table table-striped table-responsive-md">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Price</th>
+					<th>Category</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody id="tBodyProduct">
+				
+			</tbody>
+		</table>
+		<!-- Modal create-->
+		<div class="modal fade" id="modal-create" data-backdrop="static">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title">Add Product</h4>
+						<button type="button" class="close" data-dismiss="modal"
+							aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<form action="" id="create-product" >
+							<input type="hidden" name="action" id="action" value="create">
+							<div class=" card-body">
+								<div class="row">
+									<div class="col-md-12">
+										<div class="form-group">
+											<label for="name">Name</label><span class="text-danger">*</span>
+											<input type="text" name="name" id="name" class="form-control mb-4 col-4"> <span class="form-message"></span>
+										</div>
+										<div class="form-group">
+											<label for="price">price</label><span class="text-danger">*</span>
+											<input type="text" name="price" id="price" class="form-control mb-4 col-4"> 
+											<span class="form-message"></span> 
+											<span id="message" class="text-danger"></span>
+										</div>
+										<div class="form-group">
+											<label for="categoryId">Category</label>
+											<span class="text-danger">*</span> 
+											<select name="category" id="category" class="form-control mb-4 col-4">
+												
+											</select> 
+											<span class="form-message"></span> 
+											<span id="message" class="text-danger"></span>
+										</div> 
+									</div>
+								</div>
+								<div class="modal-footer justify-content-between">
+									<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+									<button class=" form-submit btn btn-primary">Add</button>
+								</div>
+							</div>
+						</form>
+
+					</div>
+
+				</div>
+				<!-- /.modal-content -->
+			</div>
+			<!-- /.modal-dialog -->
+		</div>
+		<!-- Modal edit-->
+		<div class="modal fade" id="modal-edit" data-backdrop="static">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title">Edit Product</h4>
+						<button type="button" class="close" data-dismiss="modal"
+							aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<form action="" id="edit-product" >
+							<div class=" card-body">
+								<div class="row">
+									<div class="col-md-12">
+										<input type="hidden" name="id" id="edit-id">
+										<div class="form-group">
+											<label for="name">Name</label><span class="text-danger">*</span>
+											<input type="text" name="name" id="edit-name" class="form-control mb-4 col-4"> <span class="form-message"></span>
+										</div>
+										<div class="form-group">
+											<label for="price">price</label><span class="text-danger">*</span>
+											<input type="text" name="price" id="edit-price" class="form-control mb-4 col-4"> 
+											<span class="form-message"></span> 
+											<span id="message" class="text-danger"></span>
+										</div>
+										<div class="form-group">
+											<label for="categoryId">Category</label>
+											<span class="text-danger">*</span> 
+											<select name="category" id="edit-category" class="form-control mb-4 col-4">
+												<option value="">Select a category</option>
+											</select> 
+											<span class="form-message"></span> 
+											<span id="message" class="text-danger"></span>
+										</div> 
+									</div>
+								</div>
+								<div class="modal-footer justify-content-between">
+									<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+									<button class=" form-submit btn btn-primary">Save</button>
+								</div>
+							</div>
+						</form>
+
+					</div>
+
+				</div>
+				<!-- /.modal-content -->
+			</div>
+			<!-- /.modal-dialog -->
+		</div>
+</div>
+
+</body>
+<script>
+	$(document).ready(function() {
+		handleRenderDatas();
+		
+		/*Submit create  */
+	    /* $('#create-product').submit(function(e) {
+	        e.preventDefault();
+	        var formData = new FormData(this);
+	        console.log(...formData)
+	        $.ajax({
+	            type: "post",
+	            url: "/api/products/create",
+	            data: formData,
+	            processData: false,
+	            contentType: false,
+	            success: function (p) {
+	            	$('#modal-create').modal('hide');
+	            	$('#create-product')[0].reset();
+	            	handleRenderDatas();
+	            },
+	            error: function (data, textStatus, errorThrown) {
+	               
+	            },
+	        }); 
+	    }); */
+		
+	    /* $('#edit-product').submit(function(e) {
+	        e.preventDefault();
+	        var formData = new FormData(this);
+	        console.log(formData.get("action"))
+	        console.log(...formData)
+	        $.ajax({
+	            type: "post",
+	            url: "/api/products/update",
+	            data: formData,
+	            processData: false,
+	            contentType: false,
+	            success: function (p) {
+	            	$('div#modal-edit').modal('hide');
+	            	$('#edit-product')[0].reset();
+	            	handleRenderDatas();
+	            },
+	            error: function (data, textStatus, errorThrown) {
+	               
+	            },
+	        }); 
+	    }); */
+	    
+	    /*Validate edit product  */
+		/* $('#edit-product').validate({
+	        rules: {
+	            name: {
+	                required: true,
+	            },
+	            price: {
+	                required: true,
+	                number: true,
+	                min: 1000
+	            },
+	            category: {
+	            	required: true
+	            }
+	        },
+	        messages: {
+	        	name: {
+	                required: "Vui lòng nhập tên sản phẩm",
+	            },
+	            price: {
+	                required: "Vui lòng nhập giá",
+	                number: "Trường này phải là số",
+	                min: "Giá phải lớn hơn 1000"
+	            },
+	            category: {
+	            	required: "Vui lòng chọn id sản phẩm",
+	            }
+	        },
+	        errorElement: 'span',
+	        errorPlacement: function (error, element) {
+	          error.addClass('invalid-feedback');
+	          element.closest('.form-group').append(error);
+	        },
+	        highlight: function (element, errorClass, validClass) {
+	          $(element).addClass('is-invalid');
+	        },
+	        unhighlight: function (element, errorClass, validClass) {
+	          $(element).removeClass('is-invalid');
+	        },
+	        submitHandler: function(form, e){
+	        	e.preventDefault();
+		        var formData = new FormData(form);
+		        console.log(formData.get("action"))
+		        console.log(...formData)
+		        $.ajax({
+		            type: "post",
+		            url: "/api/products/update",
+		            data: formData,
+		            processData: false,
+		            contentType: false,
+		            success: function (p) {
+		            	$('div#modal-edit').modal('hide');
+		            	$('#edit-product')[0].reset();
+		            	handleRenderDatas();
+		            },
+		            error: function (data, textStatus, errorThrown) {
+		               
+		            },
+		        }); 
+            }
+	      }); */
+	    
+	    
+	    /*Validate create product  */
+		/* $('#create-product', '#edit-product').validate({
+	        rules: {
+	            name: {
+	                required: true,
+	            },
+	            price: {
+	                required: true,
+	            },
+	            category: {
+	            	required: true
+	            }
+	        },
+	        messages: {
+	            price: {
+	                required: "Vui lòng nhập giá",
+	            },
+	            name: {
+	                required: "Vui lòng nhập tên sản phẩm",
+	                number: true,
+	                min: 1000
+	            },
+	            category: {
+	            	required: "Vui lòng chọn id sản phẩm",
+	            }
+	        },
+	        errorElement: 'span',
+	        errorPlacement: function (error, element) {
+	          error.addClass('invalid-feedback');
+	          element.closest('.form-group').append(error);
+	        },
+	        highlight: function (element, errorClass, validClass) {
+	          $(element).addClass('is-invalid');
+	        },
+	        unhighlight: function (element, errorClass, validClass) {
+	          $(element).removeClass('is-invalid');
+	        },
+	        submitHandler: function(form, e){
+	        	e.preventDefault();
+		        var formData = new FormData(form);
+		        console.log(...formData)
+		        $.ajax({
+		            type: "post",
+		            url: "/api/products/create",
+		            data: formData,
+		            processData: false,
+		            contentType: false,
+		            success: function (p) {
+		            	$('#modal-create').modal('hide');
+		            	$('#create-product')[0].reset();
+		            	handleRenderDatas();
+		            },
+		            error: function (data, textStatus, errorThrown) {
+		            	console.log('Error:', errorThrown);
+		            },
+		        }); 
+            }
+	      }); */
+	      
+		validateProductForm('#create-product', function(form, e) {
+		    e.preventDefault();
+		    var formData = new FormData(form);
+		    console.log(formData.get("action"))
+		    console.log(...formData)
+		    $.ajax({
+		        type: "post",
+		        url: "/api/products/create",
+		        data: formData,
+		        processData: false,
+		        contentType: false,
+		        success: function (p) {
+		        	$('#modal-create').modal('hide');
+	            	$('#create-product')[0].reset();
+	            	handleRenderDatas();
+		        },
+		        error: function (data, textStatus, errorThrown) {
+		            // xử lý khi submit lỗi
+		        },
+		    });
+		})
+		validateProductForm('#edit-product', function(form, e) {
+		    e.preventDefault();
+		    var formData = new FormData(form);
+		    console.log(formData.get("action"))
+		    console.log(...formData)
+		    $.ajax({
+		        type: "post",
+		        url: "/api/products/create",
+		        data: formData,
+		        processData: false,
+		        contentType: false,
+		        success: function (p) {
+		        	$('#modal-edit').modal('hide');
+	            	$('#edit-product')[0].reset();
+	            	handleRenderDatas();
+	            	handleRenderDatas();
+		        },
+		        error: function (data, textStatus, errorThrown) {
+		            // xử lý khi submit lỗi
+		        },
+		    });
+		})
+	})
+	
+	// show modal edit
+    function Edit(idProduct){
+        $.ajax({
+            url: "/api/products/update",
+            type: 'GET',
+            data: {
+            	id: idProduct
+            },
+            success: function (data) {
+            	/* var product = JSON.parse(data); */
+            	console.log(data)
+            	console.log(data.product)
+            	$('#edit-id').val(data.product.id)
+                $('#edit-name').val(data.product.name)
+                $('#edit-price').val(data.product.price)
+                let option = ``;
+                data.categories.forEach(cate => {
+                	if(cate.id === data.product.category.id) {
+                		option += `<option  value=${cate.id} selected>${cate.name}</option>`;
+                	} else {
+                		option += `<option  value=${cate.id}>${cate.name}</option>`;
+                	}
+                })
+                $('#edit-category').html(option);
+            }
+        });
+    }
+	// show modal Create
+    function ShowCreate(){
+        $.ajax({
+            url: "/api/products/create",
+            type: 'GET',
+            success: function (data) {
+            	let option = `<option value="">Select a category</option>`;
+            	data.forEach(cate => {
+                	option += `<option  value=${cate.id}>${cate.name}</option>`;
+                	
+                })
+                $('#category').html(option);
+            }
+        });
+    }
+	
+	function Delete(id) {
+ 		$.ajax({
+             url: "/api/products/delete",
+             type: 'GET',
+             data: {
+             	id: id
+             },
+             success: function (data) {
+             	handleRenderDatas();
+             }
+         });
+ 	}
+	
+	function handleRenderDatas() {
+		$.ajax({
+            type: "get",
+            url: "/api/products",
+            processData: false,
+            contentType: false,
+            success: function (datas) {
+            	let html = ``;
+                datas.forEach((p) => {
+                	html += `
+                		<tr>
+        					<td >${p.name}</td>
+        					<td >${p.price}</td>
+        					<td >${p.category.name}</td>
+        					<td><a data-toggle="modal" onclick=Edit(${p.id}) data-target="#modal-edit" class="btn btn-primary">Update</a> 
+        						<a onclick=Delete(${p.id}) class="btn btn-danger">Delete</a></td>
+        				</tr>
+                	`
+                })
+                $("#tBodyProduct").html(html)
+            	/* renderData(datas) */
+            },
+            error: function (data, textStatus, errorThrown) {
+                /* $('#message').html('Email đã tồn tại'); */
+            },
+        });
+	}
+	
+	function SortPrice(value) {
+		$.ajax({
+            url: "/api/products/sortPrice",
+            type: 'GET',
+            data: {
+            	value: value
+            },
+            success: function (datas) {
+            	renderData(datas)
+            }
+        });	
+	}
+	
+	function FindName(value) {
+		$.ajax({
+            url: "/api/products/findName",
+            type: 'GET',
+            data: {
+            	value: value
+            },
+            success: function (datas) {
+            	renderData(datas)
+            }
+        });	
+	}
+	
+	function renderData(datas) {
+		console.log(datas)
+    	let html = ``;
+        datas.forEach((p) => {
+        	html += `
+        		<tr>
+					<td >${p.name}</td>
+					<td >${p.price}</td>
+					<td >${p.category.name}</td>
+					<td><a data-toggle="modal" onclick=Edit(${p.id}) data-target="#modal-edit" class="btn btn-primary">Update</a> 
+						<a onclick=Delete(${p.id}) class="btn btn-danger">Delete</a></td>
+				</tr>
+        	`
+        })
+        $("#tBodyProduct").html(html)
+	}
+	
+	/*Custom validate */
+	function validateProductForm(formSelector, submitHandler) {
+	    $(formSelector).validate({
+	        rules: {
+	            name: {
+	                required: true,
+	            },
+	            price: {
+	                required: true,
+	                number: true,
+	                min: 1000
+	            },
+	            category: {
+	                required: true
+	            }
+	        },
+	        messages: {
+	            name: {
+	                required: "Vui lòng nhập tên sản phẩm",
+	            },
+	            price: {
+	                required: "Vui lòng nhập giá",
+	                number: "Trường này phải là số",
+	                min: "Giá phải lớn hơn 1000"
+	            },
+	            category: {
+	                required: "Vui lòng chọn id sản phẩm",
+	            }
+	        },
+	        errorElement: 'span',
+	        errorPlacement: function (error, element) {
+	            error.addClass('invalid-feedback');
+	            element.closest('.form-group').append(error);
+	        },
+	        highlight: function (element, errorClass, validClass) {
+	            $(element).addClass('is-invalid');
+	        },
+	        unhighlight: function (element, errorClass, validClass) {
+	            $(element).removeClass('is-invalid');
+	        },
+	        submitHandler: submitHandler
+	    });
+	}
+	
+	
+</script>
+</html>
