@@ -13,12 +13,12 @@ import pxu.vinhlam.security.model.Product;
 public interface ProductRepo extends JpaRepository<Product, Integer> {
 	List<Product> findAll(Sort sort);
 	
-	@Query("SELECT p FROM Product p WHERE p.name LIKE %?1%")
+	@Query("SELECT p FROM Product p WHERE p.name LIKE :name")
     List<Product> findByNameContaining(String name);
 	
-	@Query("SELECT p FROM Product p WHERE p.name LIKE %?1% ORDER BY p.price ASC")
-    List<Product> findByNameContainingOrderByPriceAsc(String name);
+	@Query("SELECT p FROM Product p WHERE (p.category.id = :idCategory OR :idCategory = -1) AND p.name LIKE :name AND (p.price BETWEEN :fromPrice AND :toPrice) ORDER BY p.price ASC")
+    List<Product> findByNameContainingOrderByPriceAsc(String name, int idCategory, int fromPrice, int toPrice);
 	
-	@Query("SELECT p FROM Product p WHERE p.name LIKE %?1% ORDER BY p.price DESC")
-    List<Product> findByNameContainingOrderByPriceDesc(String name);
+	@Query("SELECT p FROM Product p WHERE (p.category.id = :idCategory OR :idCategory = -1) AND p.name LIKE :name AND (p.price BETWEEN :fromPrice AND :toPrice) ORDER BY p.price DESC")
+    List<Product> findByNameContainingOrderByPriceDesc(String name, int idCategory,  int fromPrice, int toPrice);
 }

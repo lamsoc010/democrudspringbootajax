@@ -460,6 +460,7 @@
 	}
 	
 	function FindName(value) {
+		console.log(value)
 		$.ajax({
             url: "/api/products/findName",
             type: 'GET',
@@ -467,7 +468,7 @@
             	value: value
             },
             success: function (datas) {
-            	renderData(datas)
+            	renderData(datas) 
             }
         });	
 	}

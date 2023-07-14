@@ -31,7 +31,7 @@ public class ProductController {
 	
 	@GetMapping("")
 	public String showIndex() {
-		return "base";
+		return "index3";
 	}
 	
 //	@GetMapping("/create")

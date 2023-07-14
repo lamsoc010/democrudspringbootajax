@@ -17,6 +17,11 @@ public class CategoryService {
 		return categoryRepo.findById(id).orElse(null);
 	}
 	
+	public Category create(Category category) {
+		Category cCreate = categoryRepo.save(category);
+		return cCreate;
+	}
+	
 	public List<Category> findAll() {
 		return categoryRepo.findAll();
 	}

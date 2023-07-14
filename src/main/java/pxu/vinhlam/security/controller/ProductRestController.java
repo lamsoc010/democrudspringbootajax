@@ -36,7 +36,11 @@ public class ProductRestController {
 	@GetMapping("")
 	public ResponseEntity<?> showIndex() {
 		List<Product> products = productService.findAll();
-		return ResponseEntity.ok(products);
+		List<Category> categories = categoryService.findAll();
+		Map<String, Object> map = new HashMap<>();
+		map.put("products", products);
+		map.put("categories", categories);
+		return ResponseEntity.ok(map);
 	}
 	
 	@PostMapping("/create")
@@ -45,12 +49,6 @@ public class ProductRestController {
 		product.setCategory(category);
 		Product productCreate = productService.saveReturn(product);
 		return ResponseEntity.ok(productCreate);
-	}
-	
-	@GetMapping("/create")
-	public ResponseEntity<?> showCreate() {
-		List<Category> categories = categoryService.findAll();
-		return ResponseEntity.ok(categories);
 	}
 	
 	@GetMapping("/update")
@@ -89,9 +87,12 @@ public class ProductRestController {
 	
 	@GetMapping("/sortAndFind")
 	public ResponseEntity<?> handleSortAndFind(
-			@RequestParam(defaultValue = "DESC", name = "price") String price,
-			@RequestParam(defaultValue = "", name = "name") String name) {
-		List<Product> products = productService.findProductsByNameContainingOrderByPriceAsc(name, price);
+			@RequestParam(defaultValue = "DESC") String price,
+			@RequestParam(defaultValue = "") String name,
+			@RequestParam(defaultValue = "") int idCategory,
+			@RequestParam(defaultValue = "1000") int fromPrice,
+			@RequestParam(defaultValue = "10000000") int toPrice) {
+		List<Product> products = productService.findProductsByNameContainingOrderByPriceAsc(name, price, idCategory, fromPrice, toPrice);
 		return ResponseEntity.ok(products);
 	}
 }

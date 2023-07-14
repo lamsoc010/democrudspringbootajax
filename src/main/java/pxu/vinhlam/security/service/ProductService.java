@@ -32,15 +32,17 @@ public class ProductService {
         return productRepo.findAll(sort);
     }
 	
-	public List<Product> findProductsByNameContainingOrderByPriceAsc(String name, String priceSort) {
+	public List<Product> findProductsByNameContainingOrderByPriceAsc(String name, String priceSort, int idCategory, int fromPrice, int toPrice) {
+		name = "%" + name + "%";
 		if(priceSort.equalsIgnoreCase("asc")) {
-			return productRepo.findByNameContainingOrderByPriceAsc(name);			
+			return productRepo.findByNameContainingOrderByPriceAsc(name, idCategory, fromPrice, toPrice);			
 		} else {
-			return productRepo.findByNameContainingOrderByPriceDesc(name);	
+			return productRepo.findByNameContainingOrderByPriceDesc(name, idCategory, fromPrice, toPrice);	
 		}
     }
 	
 	public List<Product> findProductsByNameContaining(String name) {
+		name = "%" + name + "%";//%n%
         return productRepo.findByNameContaining(name);
     }
 	
