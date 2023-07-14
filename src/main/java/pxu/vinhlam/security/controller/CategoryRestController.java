@@ -23,6 +23,7 @@ public class CategoryRestController {
 	@GetMapping("")
 	public ResponseEntity<?> findAll() {
 		List<Category> categories = categoryService.findAll();
+		System.out.println("hello");
 		return ResponseEntity.ok(categories);
 	}
 	
